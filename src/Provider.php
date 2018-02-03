@@ -30,7 +30,8 @@ class Provider extends ServiceProvider
             }
         ];
 
-        if (config('benchmark.singleton')) {
+        $singleton = config('benchmark.singleton');
+        if ($singleton === true || $singleton === null) {
             $this->app->singleton(...$parameters);
         } else {
             $this->app->bind(...$parameters);
