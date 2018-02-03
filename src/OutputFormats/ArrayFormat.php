@@ -2,24 +2,33 @@
 
 namespace Janiaje\Benchmark\OutputFormats;
 
+use Illuminate\Support\Collection;
 use Janiaje\Benchmark\Checkpoint;
 
 class ArrayFormat implements OutputFormat
 {
     /**
-     * @param array $checkpoints
+     * @param Illuminate\Support\Collection $checkpoints
      *
      * @return array
      */
-    public static function get(array $checkpoints)
+    public static function get(Collection $checkpoints)
     {
-        $checkpoints = array_map(function (Checkpoint $checkpoint) {
-            return [
-                'name' => $checkpoint->getName(),
-                'time' => $checkpoint->getTime(),
-                'ram'  => $checkpoint->getRam(),
+        $checkpoints = $checkpoints->map(function (Checkpoint $checkpoint) {
+            $array = [
+                'id'             => $checkpoint->getId(),
+                'name'           => $checkpoint->getName(),
+                'time'           => $checkpoint->getTime(),
+                'timeDifference' => $checkpoint->getTimeDifference(),
+                'ram'            => $checkpoint->getRam(),
             ];
-        }, $checkpoints);
+
+            if (config('benchmark.log_queries') === true) {
+                $array['queries'] = $checkpoint->getQueries();
+            }
+
+            return $array;
+        });
 
         return $checkpoints;
     }

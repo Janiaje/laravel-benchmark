@@ -3,6 +3,7 @@
 namespace Janiaje\Benchmark;
 
 use Carbon\Carbon;
+use DB;
 use Janiaje\Benchmark\OutputFormats\OutputFormat;
 
 class Benchmark
@@ -10,9 +11,9 @@ class Benchmark
     use BenchmarkAliases;
 
     /**
-     * @var array
+     * @var Illuminate\Support\Collection
      */
-    private $checkpoints = [];
+    private $checkpoints;
 
     /**
      * @var \Janiaje\Benchmark\OutputFormats\OutputFormat
@@ -24,7 +25,12 @@ class Benchmark
      */
     public function __construct()
     {
+        $this->checkpoints  = collect();
         $this->outputFormat = config('benchmark.output_format');
+
+        if (config('benchmark.log_queries') === true) {
+            DB::enableQueryLog();
+        }
     }
 
     /**
@@ -34,16 +40,20 @@ class Benchmark
      */
     public function checkpoint($name = null)
     {
-        $this->checkpoints[] = new Checkpoint($name);
+        $id = $this->checkpoints->count() + 1;
+
+        $this->checkpoints->push(new Checkpoint($id, $name));
     }
 
     /**
-     * Returns the checkpoints.
+     * Returns the checkpoints in the given format.
      *
      * @return mixed
      */
     public function getCheckpoints()
     {
+        $this->enhanceCheckpoints();
+
         return $this->outputFormat::get($this->checkpoints);
     }
 
@@ -71,10 +81,10 @@ class Benchmark
     public function getElapsedTime()
     {
         /** @var Carbon $min */
-        $min = array_first($this->checkpoints);
+        $min = $this->checkpoints->first()->getTime();
 
         /** @var Carbon $max */
-        $max = array_last($this->checkpoints);
+        $max = $this->checkpoints->last()->getTime();
 
         return $min->diff($max);
     }
@@ -88,9 +98,9 @@ class Benchmark
      */
     public function getMaxRamUsage()
     {
-        $ramUsage = array_map(function (Checkpoint $checkpoint) {
+        $ramUsage = $this->checkpoints->map(function (Checkpoint $checkpoint) {
             return $checkpoint->getRam();
-        }, $this->checkpoints);
+        });
 
         return max($ramUsage);
     }
@@ -103,5 +113,30 @@ class Benchmark
     public function setOutputFormat(OutputFormat $outputFormat)
     {
         $this->outputFormat = $outputFormat;
+    }
+
+    /**
+     * Enhance checkpoints.
+     */
+    private function enhanceCheckpoints()
+    {
+        $previousCheckpoint = null;
+
+        foreach ($this->checkpoints as $checkpoint) {
+
+            if ($previousCheckpoint === null) {
+                $previousCheckpoint = $checkpoint;
+
+                continue;
+            }
+
+            $checkpoint->setTimeDifference($previousCheckpoint->getTime());
+
+            if (config('benchmark.log_queries')) {
+                $checkpoint->setQueries($previousCheckpoint->getQueries());
+            }
+
+            $previousCheckpoint = $checkpoint;
+        }
     }
 }

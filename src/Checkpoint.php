@@ -3,9 +3,15 @@
 namespace Janiaje\Benchmark;
 
 use Carbon\Carbon;
+use DB;
 
 class Checkpoint
 {
+    /**
+     * @var string
+     */
+    private $id;
+
     /**
      * @var null|string
      */
@@ -17,6 +23,13 @@ class Checkpoint
     private $time;
 
     /**
+     * Time difference between this and the previous Checkpoint.
+     *
+     * @var null|float
+     */
+    private $timeDifference;
+
+    /**
      * Allocated memory in bytes.
      *
      * @var int
@@ -24,17 +37,70 @@ class Checkpoint
     private $ram;
 
     /**
+     * Queries run.
+     *
+     * @var array
+     */
+    private $queries;
+
+    /**
      * Checkpoint constructor.
      *
+     * @param int  $id
      * @param null $name
      */
-    public function __construct($name)
+    public function __construct($id, $name)
     {
         $this->ram = memory_get_usage(config('benchmark.memory_real_usage'));
 
-        $this->time = new Carbon;
+        $this->id = '#' . $id;
 
         $this->name = $name;
+
+        $this->time = new Carbon;
+
+        $this->queries = DB::getQueryLog();
+    }
+
+    /**
+     * @param int|Carbon\Carbon $timeDifference
+     */
+    public function setTimeDifference(Carbon $time)
+    {
+        $this->timeDifference = $this->time->diff($time)->f;
+    }
+
+    /**
+     * @param array $queries Previous checkpoint's quereries.
+     */
+    public function setQueries(array $queries)
+    {
+        // Convert arrays to be able to use 'array_diff'
+        $previousQueries = array_map(function ($query) {
+            return json_encode($query);
+        }, $queries);
+
+        $queries = array_map(function ($query) {
+            return json_encode($query);
+        }, $this->queries);
+
+        // Get only the queries run between the checkpoints
+        $queries = array_diff($queries, $previousQueries);
+
+        // Conert back the array
+        $queries = array_map(function ($query) {
+            return json_decode($query);
+        }, $queries);
+
+        $this->queries = $queries;
+    }
+
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -59,5 +125,21 @@ class Checkpoint
     public function getRam()
     {
         return $this->ram;
+    }
+
+    /**
+     * @return null|float
+     */
+    public function getTimeDifference()
+    {
+        return $this->timeDifference;
+    }
+
+    /**
+     * @return array
+     */
+    public function getQueries()
+    {
+        return $this->queries;
     }
 }

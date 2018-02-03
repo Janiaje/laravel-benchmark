@@ -44,4 +44,14 @@ return [
     |
     */
     'memory_real_usage' => env('BENCHMARK_MEMORY_REAL_USAGE', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Log queries
+    |--------------------------------------------------------------------------
+    |
+    | Set this to true to log queries run between the checkpoints.
+    |
+    */
+    'log_queries'       => env('BENCHMARK_LOG_QUERIES', true),
 ];

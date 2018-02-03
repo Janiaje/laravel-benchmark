@@ -2,12 +2,14 @@
 
 namespace Janiaje\Benchmark\OutputFormats;
 
+use Illuminate\Support\Collection;
+
 interface OutputFormat
 {
     /**
-     * @param array $checkpoints Array of 'Checkpoint's
+     * @param Illuminate\Support\Collection $checkpoints Array of 'Checkpoint's
      *
      * @return mixed
      */
-    public static function get(array $checkpoints);
+    public static function get(Collection $checkpoints);
 }
