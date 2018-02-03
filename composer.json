@@ -1,35 +1,35 @@
 {
-    "name": "janiaje/benchmark",
-    "description": "Benchmark package.",
-    "keywords": [
-        "benchmark",
-        "laravel"
-    ],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "János Tihanyi",
-            "email": "tihanyi.janos@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "autoload": {
-        "psr-4": {
-            "Janiaje\\Benchmark\\": "src/"
-        },
-      "files": [
-        "src/helpers.php"
-      ]
-    },
-    "require": {
-        "php": ">=5.6",
-        "laravel/framework": ">=5.4.*"
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Janiaje\\Benchmark\\Provider"
-            ]
-        }
+  "name": "janiaje/benchmark",
+  "description": "Benchmark package.",
+  "keywords": [
+    "benchmark",
+    "laravel"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "János Tihanyi",
+      "email": "tihanyi.janos@gmail.com"
     }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Janiaje\\Benchmark\\": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "require": {
+    "php": ">=5.6",
+    "laravel/framework": ">=5.4.*"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Janiaje\\Benchmark\\Provider"
+      ]
+    }
+  }
 }
