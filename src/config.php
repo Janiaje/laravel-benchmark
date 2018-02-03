@@ -10,9 +10,8 @@ return [
     | as a singleton. If set to false, you must save the instance
     | and work with the saved instance.
     |
-    |
     */
-    'singleton' => env('BENCHMARK_SINGLETON', true),
+    'singleton'         => env('BENCHMARK_SINGLETON', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -29,7 +28,7 @@ return [
     | it implements the '\Janiaje\Benchmark\OutputFormats\OutputFormat' interface.
     |
     */
-    'output_format' => env('BENCHMARK_OUTPUT_FORMAT', \Janiaje\Benchmark\OutputFormats\ArrayFormat::class),
+    'output_format'     => env('BENCHMARK_OUTPUT_FORMAT', \Janiaje\Benchmark\OutputFormats\ArrayFormat::class),
 
     /*
     |--------------------------------------------------------------------------
