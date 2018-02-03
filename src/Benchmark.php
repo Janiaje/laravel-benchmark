@@ -102,7 +102,7 @@ class Benchmark
             return $checkpoint->getRam();
         });
 
-        return max($ramUsage);
+        return $ramUsage->max();
     }
 
     /**

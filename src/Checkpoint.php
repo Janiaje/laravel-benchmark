@@ -25,7 +25,7 @@ class Checkpoint
     /**
      * Time difference between this and the previous Checkpoint.
      *
-     * @var null|float
+     * @var null|\DateInterval
      */
     private $timeDifference;
 
@@ -67,7 +67,7 @@ class Checkpoint
      */
     public function setTimeDifference(Carbon $time)
     {
-        $this->timeDifference = $this->time->diff($time)->format('%H:%I:%S.%F');
+        $this->timeDifference = $this->time->diff($time);
     }
 
     /**
@@ -128,7 +128,7 @@ class Checkpoint
     }
 
     /**
-     * @return null|float
+     * @return null|\DateInterval
      */
     public function getTimeDifference()
     {
