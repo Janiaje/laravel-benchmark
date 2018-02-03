@@ -47,7 +47,7 @@ class Provider extends ServiceProvider
         ], 'config');
 
         if (!file_exists(config_path('benchmark.php'))) {
-            $this->mergeConfigFrom(__DIR__ . '/config.php', 'validate');
+            $this->mergeConfigFrom(__DIR__ . '/config.php', 'benchmark');
         }
     }
 }
