@@ -7,5 +7,5 @@
  */
 function benchmark()
 {
-    return new Janiaje\Benchmark\Benchmark();
+    return resolve(Janiaje\Benchmark\Benchmark::class);
 }
