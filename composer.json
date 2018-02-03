@@ -16,7 +16,10 @@
     "autoload": {
         "psr-4": {
             "Janiaje\\Benchmark\\": "src/"
-        }
+        },
+      "files": [
+        "src/helpers.php"
+      ]
     },
     "require": {
         "php": ">=5.6",
