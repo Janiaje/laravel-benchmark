@@ -11,7 +11,7 @@ return [
     | and work with the saved instance.
     |
     */
-    'singleton'         => env('BENCHMARK_SINGLETON', true),
+    'singleton' => env('BENCHMARK_SINGLETON', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,7 +28,7 @@ return [
     | it implements the '\Janiaje\Benchmark\OutputFormats\OutputFormat' interface.
     |
     */
-    'output_format'     => env('BENCHMARK_OUTPUT_FORMAT', \Janiaje\Benchmark\OutputFormats\ArrayFormat::class),
+    'output_format' => env('BENCHMARK_OUTPUT_FORMAT', \Janiaje\Benchmark\OutputFormats\ArrayFormat::class),
 
     /*
     |--------------------------------------------------------------------------
@@ -52,5 +52,5 @@ return [
     | Set this to true to log queries run between the checkpoints.
     |
     */
-    'log_queries'       => env('BENCHMARK_LOG_QUERIES', true),
+    'log_queries' => env('BENCHMARK_LOG_QUERIES', true),
 ];
