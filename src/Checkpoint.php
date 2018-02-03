@@ -67,7 +67,7 @@ class Checkpoint
      */
     public function setTimeDifference(Carbon $time)
     {
-        $this->timeDifference = $this->time->diff($time)->f;
+        $this->timeDifference = $this->time->diff($time)->format('%H:%I:%S.%F');
     }
 
     /**
