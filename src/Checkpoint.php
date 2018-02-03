@@ -51,7 +51,8 @@ class Checkpoint
      */
     public function __construct($id, $name)
     {
-        $this->ram = memory_get_usage(config('benchmark.memory_real_usage'));
+        $bytes     = memory_get_usage(config('benchmark.memory_real_usage'));
+        $this->ram = $this->formatBytes($bytes);
 
         $this->id = '#' . $id;
 
@@ -141,5 +142,33 @@ class Checkpoint
     public function getQueries()
     {
         return $this->queries;
+    }
+
+    /**
+     * Formats bytes into the given format.
+     *
+     * @param int $bytes
+     *
+     * @return string
+     */
+    private function formatBytes($bytes)
+    {
+        $prefixes = [
+            'B',
+            'kB',
+            'MB',
+            'GB',
+            'TB',
+        ];
+        
+        for (
+            $i = 0, $prefixesLength = count($prefixes);
+            $i < $prefixesLength && $bytes > 1024;
+            $i++
+        ) {
+            $bytes /= 1024;
+        }
+        
+        return $bytes . $prefixes[$i];
     }
 }
