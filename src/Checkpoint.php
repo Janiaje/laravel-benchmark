@@ -51,8 +51,7 @@ class Checkpoint
      */
     public function __construct($id, $name)
     {
-        $bytes     = memory_get_usage(config('benchmark.memory_real_usage'));
-        $this->ram = $this->formatBytes($bytes);
+        $this->ram = memory_get_usage(config('benchmark.memory_real_usage'));
 
         $this->id = '#' . $id;
 
@@ -64,7 +63,7 @@ class Checkpoint
     }
 
     /**
-     * @param int|Carbon\Carbon $timeDifference
+     * @param Carbon\Carbon $time The previous checkpoint's timestamp.
      */
     public function setTimeDifference(Carbon $time)
     {
@@ -121,11 +120,17 @@ class Checkpoint
     }
 
     /**
-     * @return int
+     * @return int|string
      */
     public function getRam()
     {
-        return $this->ram;
+        $ram = $this->ram;
+
+        if(config('benchmark.format_ram_usage')) {
+            $ram = Benchmark::formatBytes($ram);
+        }
+
+        return $ram;
     }
 
     /**
@@ -142,33 +147,5 @@ class Checkpoint
     public function getQueries()
     {
         return $this->queries;
-    }
-
-    /**
-     * Formats bytes into the given format.
-     *
-     * @param int $bytes
-     *
-     * @return string
-     */
-    private function formatBytes($bytes)
-    {
-        $prefixes = [
-            'B',
-            'kB',
-            'MB',
-            'GB',
-            'TB',
-        ];
-        
-        for (
-            $i = 0, $prefixesLength = count($prefixes);
-            $i < $prefixesLength && $bytes > 1024;
-            $i++
-        ) {
-            $bytes /= 1024;
-        }
-        
-        return $bytes . $prefixes[$i];
     }
 }

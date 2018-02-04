@@ -21,6 +21,11 @@ class Benchmark
     private $outputFormat;
 
     /**
+     * @var int
+     */
+    private $peakRamUsage;
+
+    /**
      * Benchmark constructor.
      */
     public function __construct()
@@ -43,6 +48,8 @@ class Benchmark
         $id = $this->checkpoints->count() + 1;
 
         $this->checkpoints->push(new Checkpoint($id, $name));
+
+        $this->peakRamUsage = memory_get_peak_usage(config('benchmark.memory_real_usage'));
     }
 
     /**
@@ -54,7 +61,7 @@ class Benchmark
     {
         $this->enhanceCheckpoints();
 
-        return $this->outputFormat::get($this->checkpoints);
+        return call_user_func($this->outputFormat . '::get', $this->checkpoints);
     }
 
     /**
@@ -80,10 +87,10 @@ class Benchmark
      */
     public function getElapsedTime()
     {
-        /** @var Carbon $min */
+        /** @var Carbon\Carbon $min */
         $min = $this->checkpoints->first()->getTime();
 
-        /** @var Carbon $max */
+        /** @var Carbon\Carbon $max */
         $max = $this->checkpoints->last()->getTime();
 
         return $min->diff($max);
@@ -91,18 +98,19 @@ class Benchmark
 
     /**
      * Returns the maximum amount of RAM,
-     * that PHP allocated at the checkpoints.
-     * (in bytes)
+     * that PHP allocated before the last checkpoint.
      *
-     * @return int
+     * @return int|string
      */
-    public function getMaxRamUsage()
+    public function getPeakRamUsage()
     {
-        $ramUsage = $this->checkpoints->map(function (Checkpoint $checkpoint) {
-            return $checkpoint->getRam();
-        });
+        $ramUsage = $this->peakRamUsage;
 
-        return $ramUsage->max();
+        if(config('benchmark.format_ram_usage')) {
+            $ramUsage = self::formatBytes($ramUsage);
+        }
+
+        return $ramUsage;
     }
 
     /**
@@ -138,5 +146,33 @@ class Benchmark
 
             $previousCheckpoint = $checkpoint;
         }
+    }
+
+    /**
+     * Formats bytes into the given format.
+     *
+     * @param int $bytes
+     *
+     * @return string
+     */
+    public static function formatBytes($bytes)
+    {
+        $prefixes = [
+            'B',
+            'kB',
+            'MB',
+            'GB',
+            'TB',
+        ];
+
+        for (
+            $i = 0, $prefixesLength = count($prefixes);
+            $i < $prefixesLength && $bytes > 1024;
+            $i++
+        ) {
+            $bytes /= 1024;
+        }
+
+        return $bytes . $prefixes[$i];
     }
 }
