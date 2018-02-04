@@ -32,7 +32,7 @@ $elapsedTime = benchmark()->getElapsedTime();
 
 Get the maximum amount RAM (in bytes) allocated by PHP in the checkpoints:
 ```php
-$ramUsage = benchmark()->getMaxRamUsage();
+$ramUsage = benchmark()->getPeakRamUsage();
 ```
 
 Get the checkpoints:
