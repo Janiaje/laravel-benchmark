@@ -118,7 +118,7 @@ class Benchmark
      *
      * @param \Janiaje\Benchmark\OutputFormats\OutputFormat $outputFormat
      */
-    public function setOutputFormat(OutputFormat $outputFormat)
+    public function setOutputFormat(string $outputFormat)
     {
         $this->outputFormat = $outputFormat;
     }
