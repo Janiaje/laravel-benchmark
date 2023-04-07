@@ -47,7 +47,7 @@ jobs:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Release ${{ steps.version.outputs.version }}
         draft: false
-        prerelease: true
+        prerelease: false
       
     - name: Publish Package to GitHub Releases
       uses: actions/upload-release-asset@v1
