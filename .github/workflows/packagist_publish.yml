@@ -38,6 +38,17 @@ jobs:
     - name: Generate Package Files
       run: composer archive --format=zip --file=package.zip
       
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: true
+      
     - name: Publish Package to GitHub Releases
       uses: actions/upload-release-asset@v1
       with:
