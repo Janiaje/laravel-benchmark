@@ -36,7 +36,7 @@ jobs:
       run: composer config version "${{ steps.version.outputs.version }}"
       
     - name: Generate Package Files
-      run: composer archive --format=zip --file=package.zip
+      run: composer archive --format=zip --file=package
       
     - name: Create Release
       id: create_release
