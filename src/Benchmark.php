@@ -2,8 +2,8 @@
 
 namespace Janiaje\Benchmark;
 
-use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Janiaje\Benchmark\OutputFormats\OutputFormat;
 
 class Benchmark
@@ -11,12 +11,12 @@ class Benchmark
     use BenchmarkAliases;
 
     /**
-     * @var Illuminate\Support\Collection
+     * @var Collection
      */
     private $checkpoints;
 
     /**
-     * @var \Janiaje\Benchmark\OutputFormats\OutputFormat
+     * @var OutputFormat
      */
     private $outputFormat;
 
@@ -66,7 +66,8 @@ class Benchmark
      *
      * @return Checkpoint
      */
-    public function checkpointWithGroup($group = null) {
+    public function checkpointWithGroup($group = null)
+    {
         return $this->checkpoint(null, $group);
     }
 
@@ -143,7 +144,7 @@ class Benchmark
                 return $checkpoint->getGroup() !== $group;
             });
     }
-    
+
     /**
      * Delete all checkpoints.
      */
@@ -179,11 +180,13 @@ class Benchmark
      */
     public function getElapsedTime()
     {
-        /** @var Carbon\Carbon $min */
-        $min = $this->checkpoints->first()->getTime();
+        /** @var Checkpoint $firstCheckpoint */
+        $firstCheckpoint = $this->checkpoints->first();
+        $min = $firstCheckpoint->getTime();
 
-        /** @var Carbon\Carbon $max */
-        $max = $this->checkpoints->last()->getTime();
+        /** @var Checkpoint $lastCheckpoint */
+        $lastCheckpoint = $this->checkpoints->first();
+        $max = $lastCheckpoint->getTime();
 
         return $min->diff($max);
     }
@@ -208,9 +211,9 @@ class Benchmark
     /**
      * Sets the output format.
      *
-     * @param \Janiaje\Benchmark\OutputFormats\OutputFormat $outputFormat
+     * @param string $outputFormat Qualifier to a class which implemtens the \Janiaje\Benchmark\OutputFormats\OutputFormat interface
      */
-    public function setOutputFormat(string $outputFormat)
+    public function setOutputFormat($outputFormat)
     {
         $this->outputFormat = $outputFormat;
     }
@@ -218,7 +221,7 @@ class Benchmark
     /**
      * Returns the checkpoints in the given format.
      *
-     * @param Illuminate\Support\Collection
+     * @param Collection $checkpoints
      *
      * @return mixed
      */
@@ -232,7 +235,7 @@ class Benchmark
     /**
      * Enhance checkpoints.
      *
-     * @param Illuminate\Support\Collection
+     * @param Collection $checkpoints
      */
     private function enhanceCheckpoints($checkpoints)
     {

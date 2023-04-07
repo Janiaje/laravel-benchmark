@@ -3,7 +3,7 @@
 namespace Janiaje\Benchmark;
 
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class Checkpoint
 {
@@ -70,7 +70,7 @@ class Checkpoint
     }
 
     /**
-     * @param Carbon\Carbon $time The previous checkpoint's timestamp.
+     * @param Carbon $time The previous checkpoint's timestamp.
      */
     public function setTimeDifference(Carbon $time)
     {
