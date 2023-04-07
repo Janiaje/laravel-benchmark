@@ -18,6 +18,7 @@ jobs:
       with:
         php-version: '7.4'
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
         PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
@@ -43,7 +44,6 @@ jobs:
         asset_path: ./package.zip
         asset_name: package-${{ steps.version.outputs.version }}.zip
         asset_content_type: application/zip
-        token: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Update Package Dependencies
       run: composer update
