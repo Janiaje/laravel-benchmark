@@ -46,11 +46,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Log queries
+    | Log / collect queries
     |--------------------------------------------------------------------------
     |
-    | Set this to true to log queries run between the checkpoints.
+    | Set this to true to log / collect queries ran between the checkpoints.
     |
     */
-    'log_queries' => env('BENCHMARK_LOG_QUERIES', true),
+    'collect_queries' => env('BENCHMARK_COLLECT_QUERIES', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Format RAM usage
+    |--------------------------------------------------------------------------
+    |
+    | False if you want to get the number of bytes as the RAM usage.
+    |
+    */
+    'format_ram_usage' => env('BENCHMARK_FORMAT_RAM_USAGE', true),
 ];

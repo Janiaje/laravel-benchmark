@@ -3,12 +3,12 @@
 namespace Janiaje\Benchmark;
 
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class Checkpoint
 {
     /**
-     * @var string
+     * @var int
      */
     private $id;
 
@@ -16,6 +16,11 @@ class Checkpoint
      * @var null|string
      */
     private $name;
+
+    /**
+     * @var null|string
+     */
+    private $group;
 
     /**
      * @var Carbon
@@ -37,7 +42,7 @@ class Checkpoint
     private $ram;
 
     /**
-     * Queries run.
+     * Queries ran between this and the previous checkpoint.
      *
      * @var array
      */
@@ -49,7 +54,7 @@ class Checkpoint
      * @param int  $id
      * @param null $name
      */
-    public function __construct($id, $name)
+    public function __construct($id, $name, $group)
     {
         $this->ram = memory_get_usage(config('benchmark.memory_real_usage'));
 
@@ -57,13 +62,15 @@ class Checkpoint
 
         $this->name = $name;
 
+        $this->group = $group;
+
         $this->time = new Carbon;
 
         $this->queries = DB::getQueryLog();
     }
 
     /**
-     * @param Carbon\Carbon $time The previous checkpoint's timestamp.
+     * @param Carbon $time The previous checkpoint's timestamp.
      */
     public function setTimeDifference(Carbon $time)
     {
@@ -84,7 +91,7 @@ class Checkpoint
             return json_encode($query);
         }, $this->queries);
 
-        // Get only the queries run between the checkpoints
+        // Get only the queries ran between the checkpoints
         $queries = array_diff($queries, $previousQueries);
 
         // Conert back the array
@@ -96,7 +103,7 @@ class Checkpoint
     }
 
     /**
-     * @return string
+     * @return int
      */
     public function getId()
     {
@@ -109,6 +116,14 @@ class Checkpoint
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getGroup()
+    {
+        return $this->group;
     }
 
     /**

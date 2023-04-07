@@ -2,8 +2,8 @@
 
 namespace Janiaje\Benchmark;
 
-use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Janiaje\Benchmark\OutputFormats\OutputFormat;
 
 class Benchmark
@@ -11,12 +11,12 @@ class Benchmark
     use BenchmarkAliases;
 
     /**
-     * @var Illuminate\Support\Collection
+     * @var Collection
      */
     private $checkpoints;
 
     /**
-     * @var \Janiaje\Benchmark\OutputFormats\OutputFormat
+     * @var OutputFormat
      */
     private $outputFormat;
 
@@ -30,54 +30,147 @@ class Benchmark
      */
     public function __construct()
     {
-        $this->checkpoints  = collect();
+        $this->checkpoints = collect();
         $this->outputFormat = config('benchmark.output_format');
 
-        if (config('benchmark.log_queries') === true) {
+        if (config('benchmark.collect_queries') === true) {
             DB::enableQueryLog();
         }
     }
 
     /**
-     * Adds a checkpoint.
+     * Saves a checkpoint.
      *
      * @param null|string $name
+     * @param null|string $group
+     *
+     * @return Checkpoint
      */
-    public function checkpoint($name = null)
+    public function checkpoint($name = null, $group = null)
     {
         $id = $this->checkpoints->count() + 1;
 
-        $this->checkpoints->push(new Checkpoint($id, $name));
+        $checkpoint = new Checkpoint($id, $name, $group);
+
+        $this->checkpoints->push($checkpoint);
 
         $this->peakRamUsage = memory_get_peak_usage(config('benchmark.memory_real_usage'));
+
+        return $checkpoint;
     }
 
     /**
-     * Returns the checkpoints in the given format.
+     * Saves a checkpoint.
+     *
+     * @param null|string $group
+     *
+     * @return Checkpoint
+     */
+    public function checkpointWithGroup($group = null)
+    {
+        return $this->checkpoint(null, $group);
+    }
+
+    /**
+     * Returns the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
      *
      * @return mixed
      */
-    public function getCheckpoints()
+    public function getCheckpoints($group = null)
     {
-        $this->enhanceCheckpoints();
+        if ($group !== null) {
+            $checkpoints = $this->checkpoints
+                ->filter(function ($checkpoint, $key) use ($group) {
+                    /** @var Checkpoint $checkpoint */
+                    return $checkpoint->getGroup() === $group;
+                });
+        } else {
+            $checkpoints = $this->checkpoints;
+        }
 
-        return call_user_func($this->outputFormat . '::get', $this->checkpoints);
+        return $this->formatCheckpoints($checkpoints);
     }
 
     /**
-     * Returns the checkpoints AND dump() them.
+     * Returns all the checkpoints.
+     * (Alias for the "getCheckpoints()" function)
+     *
+     * @return mixed
      */
-    public function dump()
+    public function getAllCheckpoints()
     {
-        dump($this->getCheckpoints());
+        return $this->getAllCheckpoints(null);
     }
 
     /**
-     * Returns the checkpoints AND dd() them.
+     * Returns checkpoints having the specified group.
+     * (Alias for the "getCheckpoints()" function)
+     *
+     * @param string $group
+     *
+     * @return mixed
      */
-    public function dd()
+    public function getCheckpointsByGroup($group)
     {
-        dd($this->getCheckpoints());
+        return $this->getCheckpoints($group);
+    }
+
+    /**
+     * Delete checkpoint having a specific ID.
+     *
+     * @param int $id Id of the checkopint to clear.
+     */
+    public function deleteCheckpoint($id)
+    {
+        $this->checkpoints = $this->checkpoints
+            ->filter(function ($checkpoint, $key) use ($id) {
+                /** @var Checkpoint $checkpoint */
+                return $checkpoint->getId() !== $id;
+            });
+    }
+
+    /**
+     * Delete checkpoints having a specific group.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
+     */
+    public function deleteCheckpoints($group)
+    {
+        $this->checkpoints = $this->checkpoints
+            ->filter(function ($checkpoint, $key) use ($group) {
+                /** @var Checkpoint $checkpoint */
+                return $checkpoint->getGroup() !== $group;
+            });
+    }
+
+    /**
+     * Delete all checkpoints.
+     */
+    public function deleteAllCheckpoints()
+    {
+        $this->checkpoints = collect();
+    }
+
+    /**
+     * dump() the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
+     */
+    public function dump($group = null)
+    {
+        dump($this->getCheckpoints($group));
+    }
+
+    /**
+     * dd() the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
+     */
+    public function dd($group = null)
+    {
+        dd($this->getCheckpoints($group));
     }
 
     /**
@@ -87,11 +180,13 @@ class Benchmark
      */
     public function getElapsedTime()
     {
-        /** @var Carbon\Carbon $min */
-        $min = $this->checkpoints->first()->getTime();
+        /** @var Checkpoint $firstCheckpoint */
+        $firstCheckpoint = $this->checkpoints->first();
+        $min = $firstCheckpoint->getTime();
 
-        /** @var Carbon\Carbon $max */
-        $max = $this->checkpoints->last()->getTime();
+        /** @var Checkpoint $lastCheckpoint */
+        $lastCheckpoint = $this->checkpoints->first();
+        $max = $lastCheckpoint->getTime();
 
         return $min->diff($max);
     }
@@ -106,7 +201,7 @@ class Benchmark
     {
         $ramUsage = $this->peakRamUsage;
 
-        if(config('benchmark.format_ram_usage')) {
+        if (config('benchmark.format_ram_usage')) {
             $ramUsage = self::formatBytes($ramUsage);
         }
 
@@ -116,21 +211,37 @@ class Benchmark
     /**
      * Sets the output format.
      *
-     * @param \Janiaje\Benchmark\OutputFormats\OutputFormat $outputFormat
+     * @param string $outputFormat Qualifier to a class which implemtens the \Janiaje\Benchmark\OutputFormats\OutputFormat interface
      */
-    public function setOutputFormat(string $outputFormat)
+    public function setOutputFormat($outputFormat)
     {
         $this->outputFormat = $outputFormat;
     }
 
     /**
-     * Enhance checkpoints.
+     * Returns the checkpoints in the given format.
+     *
+     * @param Collection $checkpoints
+     *
+     * @return mixed
      */
-    private function enhanceCheckpoints()
+    private function formatCheckpoints($checkpoints)
+    {
+        $this->enhanceCheckpoints($checkpoints);
+
+        return call_user_func($this->outputFormat . '::get', $checkpoints);
+    }
+
+    /**
+     * Enhance checkpoints.
+     *
+     * @param Collection $checkpoints
+     */
+    private function enhanceCheckpoints($checkpoints)
     {
         $previousCheckpoint = null;
 
-        foreach ($this->checkpoints as $checkpoint) {
+        foreach ($checkpoints as $checkpoint) {
 
             if ($previousCheckpoint === null) {
                 $previousCheckpoint = $checkpoint;
@@ -140,7 +251,7 @@ class Benchmark
 
             $checkpoint->setTimeDifference($previousCheckpoint->getTime());
 
-            if (config('benchmark.log_queries')) {
+            if (config('benchmark.collect_queries')) {
                 $checkpoint->setQueries($previousCheckpoint->getQueries());
             }
 
@@ -149,7 +260,7 @@ class Benchmark
     }
 
     /**
-     * Formats bytes into the given format.
+     * Converts the bytes to the highest unit, where they reach at least 1.
      *
      * @param int $bytes
      *
@@ -157,7 +268,7 @@ class Benchmark
      */
     public static function formatBytes($bytes)
     {
-        $prefixes = [
+        $postfixes = [
             'B',
             'kB',
             'MB',
@@ -166,13 +277,13 @@ class Benchmark
         ];
 
         for (
-            $i = 0, $prefixesLength = count($prefixes);
+            $i = 0, $prefixesLength = count($postfixes);
             $i < $prefixesLength && $bytes > 1024;
             $i++
         ) {
             $bytes /= 1024;
         }
 
-        return $bytes . $prefixes[$i];
+        return $bytes . $postfixes[$i];
     }
 }

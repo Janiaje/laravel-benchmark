@@ -14,22 +14,21 @@ class ArrayFormat implements OutputFormat
      */
     public static function get(Collection $checkpoints)
     {
-        $checkpoints = $checkpoints->map(function (Checkpoint $checkpoint) {
+        return $checkpoints->map(function (Checkpoint $checkpoint) {
             $array = [
                 'id'             => $checkpoint->getId(),
                 'name'           => $checkpoint->getName(),
+                'group'          => $checkpoint->getGroup(),
                 'time'           => $checkpoint->getTime(),
                 'timeDifference' => $checkpoint->getTimeDifference(),
                 'ram'            => $checkpoint->getRam(),
             ];
 
-            if (config('benchmark.log_queries') === true) {
+            if (config('benchmark.collect_queries') === true) {
                 $array['queries'] = $checkpoint->getQueries();
             }
 
             return $array;
         });
-
-        return $checkpoints;
     }
 }
