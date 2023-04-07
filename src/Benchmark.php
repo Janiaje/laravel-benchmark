@@ -154,18 +154,22 @@ class Benchmark
 
     /**
      * dump() the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
      */
-    public function dump()
+    public function dump($group = null)
     {
-        dump($this->getCheckpoints());
+        dump($this->getCheckpoints($group));
     }
 
     /**
      * dd() the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
      */
-    public function dd()
+    public function dd($group = null)
     {
-        dd($this->getCheckpoints());
+        dd($this->getCheckpoints($group));
     }
 
     /**
