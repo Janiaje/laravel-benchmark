@@ -1,0 +1,53 @@
+name: Publish Package to Packagist on Tag Push
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    name: Publish New Version
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      
+    - name: Set up PHP and Packagist Authentication
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+        PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+        COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+        COMPOSER_ALLOW_SUPERUSER: 1
+        
+    - name: Install Dependencies
+      run: composer install
+      
+    - name: Generate Version Number
+      id: version
+      run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
+      
+    - name: Update Package Version
+      run: composer config version "${{ steps.version.outputs.version }}"
+      
+    - name: Generate Package Files
+      run: composer archive --format=zip --file=package.zip
+      
+    - name: Publish Package to GitHub Releases
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./package.zip
+        asset_name: package-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update Package Dependencies
+      run: composer update
+      
+    - name: Publish Package to Packagist
+      run: composer --no-interaction --no-ansi --no-progress --no-scripts push
