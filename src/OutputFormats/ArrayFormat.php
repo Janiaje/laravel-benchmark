@@ -24,7 +24,7 @@ class ArrayFormat implements OutputFormat
                 'ram'            => $checkpoint->getRam(),
             ];
 
-            if (config('benchmark.log_queries') === true) {
+            if (config('benchmark.collect_queries') === true) {
                 $array['queries'] = $checkpoint->getQueries();
             }
 

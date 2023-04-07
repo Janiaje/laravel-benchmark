@@ -52,5 +52,5 @@ return [
     | Set this to true to log / collect queries ran between the checkpoints.
     |
     */
-    'log_queries' => env('BENCHMARK_LOG_QUERIES', true),
+    'collect_queries' => env('BENCHMARK_COLLECT_QUERIES', true),
 ];

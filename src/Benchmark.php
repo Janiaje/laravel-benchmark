@@ -33,7 +33,7 @@ class Benchmark
         $this->checkpoints = collect();
         $this->outputFormat = config('benchmark.output_format');
 
-        if (config('benchmark.log_queries') === true) {
+        if (config('benchmark.collect_queries') === true) {
             DB::enableQueryLog();
         }
     }
@@ -244,7 +244,7 @@ class Benchmark
 
             $checkpoint->setTimeDifference($previousCheckpoint->getTime());
 
-            if (config('benchmark.log_queries')) {
+            if (config('benchmark.collect_queries')) {
                 $checkpoint->setQueries($previousCheckpoint->getQueries());
             }
 
