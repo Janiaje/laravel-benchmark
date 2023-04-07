@@ -30,7 +30,7 @@ class Benchmark
      */
     public function __construct()
     {
-        $this->checkpoints  = collect();
+        $this->checkpoints = collect();
         $this->outputFormat = config('benchmark.output_format');
 
         if (config('benchmark.log_queries') === true) {
@@ -39,33 +39,121 @@ class Benchmark
     }
 
     /**
-     * Adds a checkpoint.
+     * Saves a checkpoint.
      *
      * @param null|string $name
+     * @param null|string $group
+     *
+     * @return Checkpoint
      */
-    public function checkpoint($name = null)
+    public function checkpoint($name = null, $group = null)
     {
         $id = $this->checkpoints->count() + 1;
 
-        $this->checkpoints->push(new Checkpoint($id, $name));
+        $checkpoint = new Checkpoint($id, $name, $group);
+
+        $this->checkpoints->push($checkpoint);
 
         $this->peakRamUsage = memory_get_peak_usage(config('benchmark.memory_real_usage'));
+
+        return $checkpoint;
     }
 
     /**
-     * Returns the checkpoints in the given format.
+     * Saves a checkpoint.
+     *
+     * @param null|string $group
+     *
+     * @return Checkpoint
+     */
+    public function checkpointWithGroup($group = null) {
+        return $this->checkpoint(null, $group);
+    }
+
+    /**
+     * Returns the checkpoints.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
      *
      * @return mixed
      */
-    public function getCheckpoints()
+    public function getCheckpoints($group = null)
     {
-        $this->enhanceCheckpoints();
+        if ($group !== null) {
+            $checkpoints = $this->checkpoints
+                ->filter(function ($checkpoint, $key) use ($group) {
+                    /** @var Checkpoint $checkpoint */
+                    return $checkpoint->getGroup() === $group;
+                });
+        } else {
+            $checkpoints = $this->checkpoints;
+        }
 
-        return call_user_func($this->outputFormat . '::get', $this->checkpoints);
+        return $this->formatCheckpoints($checkpoints);
     }
 
     /**
-     * Returns the checkpoints AND dump() them.
+     * Returns all the checkpoints.
+     * (Alias for the "getCheckpoints()" function)
+     *
+     * @return mixed
+     */
+    public function getAllCheckpoints()
+    {
+        return $this->getAllCheckpoints(null);
+    }
+
+    /**
+     * Returns checkpoints having the specified group.
+     * (Alias for the "getCheckpoints()" function)
+     *
+     * @param string $group
+     *
+     * @return mixed
+     */
+    public function getCheckpointsByGroup($group)
+    {
+        return $this->getCheckpoints($group);
+    }
+
+    /**
+     * Delete checkpoint having a specific ID.
+     *
+     * @param int $id Id of the checkopint to clear.
+     */
+    public function deleteCheckpoint($id)
+    {
+        $this->checkpoints = $this->checkpoints
+            ->filter(function ($checkpoint, $key) use ($id) {
+                /** @var Checkpoint $checkpoint */
+                return $checkpoint->getId() !== $id;
+            });
+    }
+
+    /**
+     * Delete checkpoints having a specific group.
+     *
+     * @param null|string $group Group name specified for the checkpoints or null to return all of them.
+     */
+    public function deleteCheckpoints($group)
+    {
+        $this->checkpoints = $this->checkpoints
+            ->filter(function ($checkpoint, $key) use ($group) {
+                /** @var Checkpoint $checkpoint */
+                return $checkpoint->getGroup() !== $group;
+            });
+    }
+    
+    /**
+     * Delete all checkpoints.
+     */
+    public function deleteAllCheckpoints()
+    {
+        $this->checkpoints = collect();
+    }
+
+    /**
+     * dump() the checkpoints.
      */
     public function dump()
     {
@@ -73,7 +161,7 @@ class Benchmark
     }
 
     /**
-     * Returns the checkpoints AND dd() them.
+     * dd() the checkpoints.
      */
     public function dd()
     {
@@ -106,7 +194,7 @@ class Benchmark
     {
         $ramUsage = $this->peakRamUsage;
 
-        if(config('benchmark.format_ram_usage')) {
+        if (config('benchmark.format_ram_usage')) {
             $ramUsage = self::formatBytes($ramUsage);
         }
 
@@ -124,13 +212,29 @@ class Benchmark
     }
 
     /**
-     * Enhance checkpoints.
+     * Returns the checkpoints in the given format.
+     *
+     * @param Illuminate\Support\Collection
+     *
+     * @return mixed
      */
-    private function enhanceCheckpoints()
+    private function formatCheckpoints($checkpoints)
+    {
+        $this->enhanceCheckpoints($checkpoints);
+
+        return call_user_func($this->outputFormat . '::get', $checkpoints);
+    }
+
+    /**
+     * Enhance checkpoints.
+     *
+     * @param Illuminate\Support\Collection
+     */
+    private function enhanceCheckpoints($checkpoints)
     {
         $previousCheckpoint = null;
 
-        foreach ($this->checkpoints as $checkpoint) {
+        foreach ($checkpoints as $checkpoint) {
 
             if ($previousCheckpoint === null) {
                 $previousCheckpoint = $checkpoint;
@@ -149,7 +253,7 @@ class Benchmark
     }
 
     /**
-     * Formats bytes into the given format.
+     * Converts the bytes to the highest unit, where they reach at least 1.
      *
      * @param int $bytes
      *
@@ -157,7 +261,7 @@ class Benchmark
      */
     public static function formatBytes($bytes)
     {
-        $prefixes = [
+        $postfixes = [
             'B',
             'kB',
             'MB',
@@ -166,13 +270,13 @@ class Benchmark
         ];
 
         for (
-            $i = 0, $prefixesLength = count($prefixes);
+            $i = 0, $prefixesLength = count($postfixes);
             $i < $prefixesLength && $bytes > 1024;
             $i++
         ) {
             $bytes /= 1024;
         }
 
-        return $bytes . $prefixes[$i];
+        return $bytes . $postfixes[$i];
     }
 }

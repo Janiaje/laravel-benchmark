@@ -14,10 +14,11 @@ class ArrayFormat implements OutputFormat
      */
     public static function get(Collection $checkpoints)
     {
-        $checkpoints = $checkpoints->map(function (Checkpoint $checkpoint) {
+        return $checkpoints->map(function (Checkpoint $checkpoint) {
             $array = [
                 'id'             => $checkpoint->getId(),
                 'name'           => $checkpoint->getName(),
+                'group'          => $checkpoint->getGroup(),
                 'time'           => $checkpoint->getTime(),
                 'timeDifference' => $checkpoint->getTimeDifference(),
                 'ram'            => $checkpoint->getRam(),
@@ -29,7 +30,5 @@ class ArrayFormat implements OutputFormat
 
             return $array;
         });
-
-        return $checkpoints;
     }
 }

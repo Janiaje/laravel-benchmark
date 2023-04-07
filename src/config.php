@@ -46,10 +46,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Log queries
+    | Log / collect queries
     |--------------------------------------------------------------------------
     |
-    | Set this to true to log queries run between the checkpoints.
+    | Set this to true to log / collect queries ran between the checkpoints.
     |
     */
     'log_queries' => env('BENCHMARK_LOG_QUERIES', true),
