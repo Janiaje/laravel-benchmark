@@ -53,4 +53,14 @@ return [
     |
     */
     'collect_queries' => env('BENCHMARK_COLLECT_QUERIES', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Format RAM usage
+    |--------------------------------------------------------------------------
+    |
+    | False if you want to get the number of bytes as the RAM usage.
+    |
+    */
+    'format_ram_usage' => env('BENCHMARK_FORMAT_RAM_USAGE', true),
 ];
