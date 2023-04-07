@@ -1,0 +1,14 @@
+name: My Workflow
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  my-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: My Step
+        run: echo "Hello, world!"
