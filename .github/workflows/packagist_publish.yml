@@ -52,7 +52,7 @@ jobs:
     - name: Publish Package to GitHub Releases
       uses: actions/upload-release-asset@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./package.zip
         asset_name: package-${{ steps.version.outputs.version }}.zip
         asset_content_type: application/zip
