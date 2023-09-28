@@ -185,7 +185,7 @@ class Benchmark
         $min = $firstCheckpoint->getTime();
 
         /** @var Checkpoint $lastCheckpoint */
-        $lastCheckpoint = $this->checkpoints->first();
+        $lastCheckpoint = $this->checkpoints->last();
         $max = $lastCheckpoint->getTime();
 
         return $min->diff($max);
